@@ -719,6 +719,9 @@ CanvasElementAntsMap.prototype.draw = function() {
 		}
 	}
 
+	// draw ai-state visualization graphics (layer 0)
+	this.drawAIStateVisualization(0);
+
 	// draw ants sorted by color
 	for (hash in this.drawStates) {
 		this.ctx.fillStyle = hash;
@@ -854,30 +857,67 @@ CanvasElementAntsMap.prototype.draw = function() {
 		this.ctx.restore();
 	}
 
-	// draw ai-state visualization graphics
-	this.setLineWidth(1);
-	this.setLineColor(0, 0, 0, 1);
-	this.setFillColor(255, 255, 255, 0.5);
-	var overlay_history = this.state.replay.meta['replaydata']['overlay_history'];
+	// draw ai-state visualization graphics (layer 1)
+	this.drawAIStateVisualization(1);
+
+	// fog
+	if (this.state.fogPlayer !== undefined) {
+		dx = (this.fog.w < colPixels) ? ((colPixels - this.fog.w + 1) >> 1) - this.fog.shiftX : 0;
+		dy = (this.fog.h < rowPixels) ? ((rowPixels - this.fog.h + 1) >> 1) - this.fog.shiftY : 0;
+		this.drawWrapped(dx, dy, this.fog.w, this.fog.h, this.w, this.h, function(ctx, img, x, y) {
+			ctx.drawImage(img, x, y);
+		}, [ this.ctx, this.fog.canvas, dx, dy ]);
+	}
+
+	// draw ai-state visualization graphics (layer 2)
+	this.drawAIStateVisualization(2);
+};
+
+/**
+ * Draw the AI-state visualizations for a specified layer
+ */
+CanvasElementAntsMap.prototype.drawAIStateVisualization = function(drawingLayer)
+{
+	// check that there is a selected player for drawing ai visualizations
 	if (this.state.aistatePlayer !== undefined) {
+		// set the default layer
+		var	currentLayer = 1;
+		// set the default line width and colours
+		this.setLineWidth(1);
+		this.setLineColor(0, 0, 0, 1);
+		this.setFillColor(255, 255, 255, 0.5);
+		// get the overlay history and data for the selected player on this turn
+		var overlay_history = this.state.replay.meta['replaydata']['overlay_history'];
 		var overlays = overlay_history[this.state.aistatePlayer][this.turn];
 		if(overlays != null) {
-			for(i = 0; i < overlays.length; i++) {
-				// process visualizer commands
+			for(var i = 0; i < overlays.length; i++) {
+				// get visualizer commands and parameters
 				var overlay = overlays[i].split(',');
+				// process visualizer commands that apply regardless of layer
 				switch (overlay[0]) {
+					case 'sl':
+					case 'setLayer':
+						currentLayer = Number(overlay[1]);
+						continue;
 					case 'slw':
 					case 'setLineWidth':
 						this.setLineWidth(Number(overlay[1]));
-						break;
+						continue;
 					case 'slc':
 					case 'setLineColor':
 						this.setLineColor(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
-						break;
+						continue;
 					case 'sfc':
 					case 'setFillColor':
 						this.setFillColor(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
-						break;
+						continue;
+				}
+				// check if currentLayer is not the layer being drawn
+				if(currentLayer != drawingLayer) {
+					continue;
+				}
+				// process visualizer commands that apply only for the layer being drawn
+				switch (overlay[0]) {
 					case 'a':
 					case 'arrow':
 						this.drawArrow(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
@@ -918,15 +958,6 @@ CanvasElementAntsMap.prototype.draw = function() {
 				}
 			}
 		}
-	}
-
-	// fog
-	if (this.state.fogPlayer !== undefined) {
-		dx = (this.fog.w < colPixels) ? ((colPixels - this.fog.w + 1) >> 1) - this.fog.shiftX : 0;
-		dy = (this.fog.h < rowPixels) ? ((rowPixels - this.fog.h + 1) >> 1) - this.fog.shiftY : 0;
-		this.drawWrapped(dx, dy, this.fog.w, this.fog.h, this.w, this.h, function(ctx, img, x, y) {
-			ctx.drawImage(img, x, y);
-		}, [ this.ctx, this.fog.canvas, dx, dy ]);
 	}
 };
 
