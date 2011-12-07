@@ -1493,7 +1493,8 @@ class Ants(Game):
                                  - self.food_visible * self.num_players)
             else:
                 starting_food = 0
-            self.do_food_visible(self.food_visible * self.num_players)
+            if self.food_visible > 0:
+                self.do_food_visible(self.food_visible * self.num_players)
             self.do_food(starting_food)
 
     def finish_game(self):
