@@ -878,85 +878,93 @@ CanvasElementAntsMap.prototype.draw = function() {
  */
 CanvasElementAntsMap.prototype.drawAIStateVisualization = function(drawingLayer)
 {
-	// check that there is a selected player for drawing ai visualizations
-	if (this.state.aistatePlayer !== undefined) {
-		// set the default layer
-		var	currentLayer = 1;
-		// set the default line width and colours
-		this.setLineWidth(1);
-		this.setLineColor(0, 0, 0, 1);
-		this.setFillColor(255, 255, 255, 0.5);
-		// get the overlay history and data for the selected player on this turn
-		var overlay_history = this.state.replay.meta['replaydata']['overlay_history'];
-		var overlays = overlay_history[this.state.aistatePlayer][this.turn];
-		if(overlays != null) {
-			for(var i = 0; i < overlays.length; i++) {
-				// get visualizer commands and parameters
-				var overlay = overlays[i].split(',');
-				// process visualizer commands that apply regardless of layer
-				switch (overlay[0]) {
-					case 'sl':
-					case 'setLayer':
-						currentLayer = Number(overlay[1]);
-						continue;
-					case 'slw':
-					case 'setLineWidth':
-						this.setLineWidth(Number(overlay[1]));
-						continue;
-					case 'slc':
-					case 'setLineColor':
-						this.setLineColor(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
-						continue;
-					case 'sfc':
-					case 'setFillColor':
-						this.setFillColor(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
-						continue;
-				}
-				// check if currentLayer is not the layer being drawn
-				if(currentLayer != drawingLayer) {
-					continue;
-				}
-				// process visualizer commands that apply only for the layer being drawn
-				switch (overlay[0]) {
-					case 'a':
-					case 'arrow':
-						this.drawArrow(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
-						break;
-					case 'c':
-					case 'circle':
-						this.drawCircle(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), overlay[4].toLowerCase() === 'true');
-						break;
-					case 'l':
-					case 'line':
-						this.drawLine(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
-						break;
-					case 'r':
-					case 'rect':
-						this.drawRect(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]), overlay[5].toLowerCase() === 'true');
-						break;
-					case 'rp':
-					case 'routePlan':
-						this.drawRoutePlan(Number(overlay[1]), Number(overlay[2]), overlay[3].toLowerCase());
-						break;
-					case 's':
-					case 'star':
-						this.drawStar(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]), Number(overlay[5]), overlay[6].toLowerCase() === 'true');
-						break;
-					case 't':
-					case 'tile':
-						this.drawTile(Number(overlay[1]), Number(overlay[2]));
-						break;
-					case 'tb':
-					case 'tileBorder':
-						this.drawTileBorder(Number(overlay[1]), Number(overlay[2]), overlay[3]);
-						break;
-					case 'ts':
-					case 'tileSubtile':
-					case 'tileSubTile':
-						this.drawTileSubTile(Number(overlay[1]), Number(overlay[2]), overlay[3]);
-						break;
-				}
-			}
+	// check if there is no player selected to draw visualizations for
+	if	(this.state.aistatePlayer === undefined) {
+		return;
+	}
+	// get the overlay history
+	var overlay_history = this.state.replay.meta['replaydata']['overlay_history'];
+	if(overlay_history === undefined) {
+		return;
+	}
+	// get overlays for the selected player on this turn
+	var overlays = overlay_history[this.state.aistatePlayer][this.turn];
+	if(overlays == null) {
+		return;
+	}
+
+	// set the default layer
+	var	currentLayer = 1;
+	// set the default line width and colours
+	this.setLineWidth(1);
+	this.setLineColor(0, 0, 0, 1);
+	this.setFillColor(255, 255, 255, 0.5);
+	// process overlay commands
+	for(var i = 0; i < overlays.length; i++) {
+		// get visualizer commands and parameters
+		var overlay = overlays[i].split(',');
+		// process visualizer commands that apply regardless of layer
+		switch (overlay[0]) {
+			case 'sl':
+			case 'setLayer':
+				currentLayer = Number(overlay[1]);
+				continue;
+			case 'slw':
+			case 'setLineWidth':
+				this.setLineWidth(Number(overlay[1]));
+				continue;
+			case 'slc':
+			case 'setLineColor':
+				this.setLineColor(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
+				continue;
+			case 'sfc':
+			case 'setFillColor':
+				this.setFillColor(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
+				continue;
+		}
+		// check if currentLayer is not the layer being drawn
+		if(currentLayer != drawingLayer) {
+			continue;
+		}
+		// process visualizer commands that apply only for the layer being drawn
+		switch (overlay[0]) {
+			case 'a':
+			case 'arrow':
+				this.drawArrow(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
+				break;
+			case 'c':
+			case 'circle':
+				this.drawCircle(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), overlay[4].toLowerCase() === 'true');
+				break;
+			case 'l':
+			case 'line':
+				this.drawLine(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]));
+				break;
+			case 'r':
+			case 'rect':
+				this.drawRect(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]), overlay[5].toLowerCase() === 'true');
+				break;
+			case 'rp':
+			case 'routePlan':
+				this.drawRoutePlan(Number(overlay[1]), Number(overlay[2]), overlay[3].toLowerCase());
+				break;
+			case 's':
+			case 'star':
+				this.drawStar(Number(overlay[1]), Number(overlay[2]), Number(overlay[3]), Number(overlay[4]), Number(overlay[5]), overlay[6].toLowerCase() === 'true');
+				break;
+			case 't':
+			case 'tile':
+				this.drawTile(Number(overlay[1]), Number(overlay[2]));
+				break;
+			case 'tb':
+			case 'tileBorder':
+				this.drawTileBorder(Number(overlay[1]), Number(overlay[2]), overlay[3]);
+				break;
+			case 'ts':
+			case 'tileSubtile':
+			case 'tileSubTile':
+				this.drawTileSubTile(Number(overlay[1]), Number(overlay[2]), overlay[3]);
+				break;
 		}
 	}
 };
