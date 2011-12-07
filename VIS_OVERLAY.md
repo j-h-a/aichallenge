@@ -48,6 +48,7 @@ output to control your ants' movement, you can also send the following
 Setting state:
 
 * `v setFillColor r g b a`
+* `v setLayer layer`
 * `v setLineColor r g b a`
 * `v setLineWidth w`
 
@@ -72,10 +73,11 @@ The aliases are made by taking the first letter of the command,
 or first letter plus any capitalized letters for multi-word commands.
 So the aliases are:
 
-`sfc slc slw a c l r rp s t tb ts`
+`sfc sl slc slw a c l r rp s t tb ts`
 
 ### Notes:
 
+* `setLayer` sets the current visualization layer. Layer 0 is drawn on top of the map, behind the ants. Layer 1 is drawn on top of the ants and behind the fog. Layer 2 is drawn on top of the fog. The default is 1.
 * `setLineWidth` sets the with for all line-drawing commands. The line width `w` is in screen-units (not map-units).
 * `setLineColour` and `setFillColour` set the colour values for all line-drawing and filled area drawing commands. Colours are specified as integers for `r`, `g`, and `b` (from 0-255) and the alpha value `a` is a float (from 0.0-1.0).
 * 2D positions and dimensions (`row`, `col`, `radius`, `width`, `height`, etc.) are all floating point values in map-units. The row and column values are measured from the centre of each map square so if you want to draw shapes that line up with the map square boundaries (rather than centres) you have to add/subtract 0.5 from your numbers.
